@@ -163,6 +163,64 @@ y_pred = pd.Series(clf.predict(dogs_n_cats_test), name='Вид')
 y_pred.value_counts()
 
 
+#Задание 4
+from sklearn.model_selection import GridSearchCV
+clf = tree.DecisionTreeClassifier()
+parametrs = {"criterion": ["gini", "entropy"], "max_depth" : range(1, 30) }
+grid_search_cv_clf = GridSearchCV(clf, parametrs, cv= 5)
+grid_search_cv_clf.fit(X_train, y_train)
+grid_search_cv_clf.best_params_
+
+best_clf = grid_search_cv_clf.best_estimator_
+best_clf.score(X_test, y_test)
+
+y_pred = best_clf.predict(X_test)
+from sklearn.metrics import precision_score, recall_score
+precision_score(y_test, y_pred)
+recall_score(y_test, y_pred)
+
+
+y_predicted_prob = best_clf.predict_proba(X_test)
+pd.Series(y_predicted_prob[:,1]).hist()
+plt.show()
+
+y_pred = np.where(y_predicted_prob[:,1] > 0.1, 1, 0) 
+precision_score(y_test, y_pred)
+recall_score(y_test, y_pred)
+
+#ROC кривая
+from sklearn.metrics import roc_curve, auc
+fpr, tpr, thresholds = roc_curve(y_test, y_predicted_prob[:,1])
+roc_auc= auc(fpr, tpr)
+plt.figure()
+lw = 2
+plt.plot(fpr, tpr, color='darkorange',
+         lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
+plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver operating characteristic example')
+plt.legend(loc="lower right")
+plt.show()
+
+
+from sklearn.metrics import RocCurveDisplay, PrecisionRecallDisplay
+
+# ROC
+RocCurveDisplay.from_estimator(clf, X_test, y_test)
+plt.show()
+
+# Precision-Recall
+PrecisionRecallDisplay.from_estimator(clf, X_test, y_test)
+plt.show()
+
+
+
+
+
+
 
 
 
